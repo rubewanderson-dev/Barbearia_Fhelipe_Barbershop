@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="../style/estilo.css">
+  <link rel="stylesheet" href="../style/login.css">
+</head>
+<body>
+<header>
+    <div class="nomeDaBarbearia"><h1>FHELIPE BARBERSHOP</h1></div>
+    <div>
+      <nav>
+      <ol>
+        <li> <a href="/index.html">Inicio</a></li>
+        <li><a href="/pages/servico.html">Serviços</a></li>
+        <li><a href="/pages/sobre.html">Sobre</a></li>
+        <li><a href="/pages/agendamento.html">Agendamento</a></li>
+        <li><a href="/pages/painelAgendamento.html">Agendados</a></li>
+      </ol>
+    </nav>
+  </div>
+  </header>
+<h2>Login do barbeiro</h2>
+<input type="text" id="usuario" placeholder="Usuário">
+<input type="password" id="senha" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD64nVKdxmTd3tNsgTMQ9HEal49AUVvIEs",
+  authDomain: "barbearia-649d6.firebaseapp.com",
+  projectId: "barbearia-649d6",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+async function login() {
+  const usuario = document.getElementById("usuario").value.trim();
+  const senha = document.getElementById("senha").value.trim();
+
+  const q = query(
+    collection(db, "usuarios"),
+    where("usuario", "==", usuario),
+    where("senha", "==", senha)
+  );
+
+  const querySnapshot = await getDocs(q);
+
+  if (!querySnapshot.empty) {
+    // ✅ salva só UMA coisa (controle único)
+    localStorage.setItem("usuario", usuario);
+
+   window.location.href = "painelAgendamento.html";
+  } else {
+    alert("Usuário ou senha inválidos");
+  }
+}
+
+window.login = login;
+</script>
+</body>
+</html>

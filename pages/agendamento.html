@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento</title>
+  <link rel="stylesheet" href="../style/agendamento.css">
+  <link rel="stylesheet" href="../style/estilo.css">
+</head>
+<body>
+<header>
+    <div class="nomeDaBarbearia"><h1>FHELIPE BARBERSHOP</h1></div>
+    <div>
+      <nav>
+      <ol>
+        <li> <a href="/index.html">Inicio</a></li>
+        <li><a href="/pages/servico.html">Serviços</a></li>
+        <li><a href="/pages/sobre.html">Sobre</a></li>
+        <li><a href="/pages/agendamento.html">Agendamento</a></li>
+        <li><a href="/pages/painelAgendamento.html">Agendados</a></li>
+      </ol>
+    </nav>
+  </div>
+  </header>
+
+<main>
+  <div class="container-agendamento">
+
+    <h2>Agende seu horário</h2>
+<div class="resumo-agendamento">
+  <h3>Resumo do serviço</h3>
+  <p id="res-servico"></p>
+  <p id="res-extras"></p>
+  <p id="res-tempo"></p>
+  <p id="res-valor"></p>
+</div>
+<div id="escolha-servico">
+
+  <h3>Escolha seu serviço</h3>
+
+  <div class="servicos-opcoes">
+<div class="servico-card" data-servico="Corte" data-tempo="40" data-valor="35">
+      <h4>Corte Americano</h4>
+      <p>40 min</p>
+      <span>R$ 35</span>
+    </div>
+
+    <div class="servico-card" data-servico="Corte" data-tempo="40" data-valor="35">
+      <h4>Corte degradê</h4>
+      <p>40 min</p>
+      <span>R$ 35</span>
+    </div>
+    
+    <div class="servico-card" data-servico="Corte" data-tempo="40" data-valor="35">
+      <h4>Corte Social</h4>
+      <p>40 min</p>
+      <span>R$ 35</span>
+    </div>
+
+    <div class="servico-card" data-servico="Barba" data-tempo="30" data-valor="25">
+      <h4>Barba</h4>
+      <p>30 min</p>
+      <span>R$ 25</span>
+    </div>
+
+    <div class="servico-card" data-servico="Corte + Barba" data-tempo="70" data-valor="60">
+      <h4>Combo</h4>
+      <p>70 min</p>
+      <span>R$ 60</span>
+    </div>
+
+  </div>
+    <div class="servicos-opcoes">
+<div class="servico-card" data-servico="Corte" data-tempo="40" data-valor="35">
+      <h4>Corte Americano</h4>
+      <p>40 min</p>
+      <span>R$ 35</span>
+    </div>
+
+    <div class="servico-card" data-servico="Corte" data-tempo="40" data-valor="35">
+      <h4>Corte degradê</h4>
+      <p>40 min</p>
+      <span>R$ 35</span>
+    </div>
+    
+    <div class="servico-card" data-servico="Corte" data-tempo="40" data-valor="35">
+      <h4>Corte Social</h4>
+      <p>40 min</p>
+      <span>R$ 35</span>
+    </div>
+
+    <div class="servico-card" data-servico="Barba" data-tempo="30" data-valor="25">
+      <h4>Barba</h4>
+      <p>30 min</p>
+      <span>R$ 25</span>
+    </div>
+
+    <div class="servico-card" data-servico="Corte + Barba" data-tempo="70" data-valor="60">
+      <h4>Combo</h4>
+      <p>70 min</p>
+      <span>R$ 60</span>
+    </div>
+
+  </div>
+<div id="extras-agendamento">
+
+  <h3>Extras</h3>
+
+  <label>
+    <input type="checkbox" class="extra" data-nome="Barba" data-tempo="20" data-valor="15">
+    Barba (+20min | R$15)
+  </label>
+
+  <label>
+    <input type="checkbox" class="extra" data-nome="Sobrancelha" data-tempo="10" data-valor="10">
+    Sobrancelha (+10min | R$10)
+  </label>
+
+</div>
+</div>
+    <form id="formAgendamento">
+
+      <input type="text" id="nome" placeholder="Seu nome" required>
+
+      <input type="tel" id="telefone" placeholder="Telefone" required>
+
+      <select id="servico" required>
+        <option value="">Escolha o serviço</option>
+        <option>Corte</option>
+        <option>Barba</option>
+        <option>Corte + Barba</option>
+      </select>
+
+      <input type="date" id="data" required>
+      <div id="gradeHorarios"></div>
+
+      <input type="time" id="hora" required>
+
+      <button type="submit">CONFIRMAR AGENDAMENTO</button>
+
+    </form>
+
+    <div id="mensagem"></div>
+
+  </div>
+</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs, 
+  query, 
+  where 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyD64nVKdxmTd3tNsgTMQ9HEal49AUVvIEs",
+  authDomain: "barbearia-649d6.firebaseapp.com",
+  projectId: "barbearia-649d6",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const inputServico = document.getElementById("servico");
+inputServico.addEventListener("change", carregarHorarios);
+
+const dadosSalvos = JSON.parse(localStorage.getItem("agendamento"));
+
+let tempoServico = 40; // padrão
+
+if (dadosSalvos) {
+
+  document.getElementById("res-servico").innerText = "Serviço: " + dadosSalvos.servico;
+  document.getElementById("res-extras").innerText = "Extras: " + (dadosSalvos.extras || []).join(", ");
+  document.getElementById("res-tempo").innerText = "Tempo: " + dadosSalvos.tempo + " min";
+  document.getElementById("res-valor").innerText = "Valor: R$ " + dadosSalvos.valor;
+
+  tempoServico = dadosSalvos.tempo;
+
+  // 👇 BLOQUEIA O SELECT
+  inputServico.value = dadosSalvos.servico;
+  inputServico.classList.add("select-bloqueado");
+  inputServico.disabled = true;
+  
+}
+
+// 🔥 LISTA DE HORÁRIOS
+const horarios = [
+  "08:00","09:00","10:00","11:00",
+  "13:00","14:00","15:00","16:00","17:00"
+];
+const duracaoServicos = {
+  "Corte": 40,
+  "Barba": 30,
+  "Corte + Barba": 70
+};
+
+
+// ELEMENTOS
+const form = document.getElementById('formAgendamento');
+const grade = document.getElementById("gradeHorarios");
+const inputData = document.getElementById("data");
+const inputHora = document.getElementById("hora");
+
+// 🔄 CARREGAR HORÁRIOS QUANDO ESCOLHER DATA
+inputData.addEventListener("change", carregarHorarios);
+
+async function carregarHorarios() {
+
+  const dataSelecionada = inputData.value;
+  const servicoSelecionado = inputServico.value;
+
+  if (!dataSelecionada || !servicoSelecionado) return;
+
+  grade.innerHTML = "";
+
+  const q = query(
+    collection(db, "agendamentos"),
+    where("data", "==", dataSelecionada),
+    where("status", "==", "pendente")
+  );
+
+  const snapshot = await getDocs(q);
+
+  const ocupados = snapshot.docs.map(doc => {
+    return {
+      hora: doc.data().hora,
+      tempo: doc.data().tempo || 40
+    };
+  });
+
+  
+
+  horarios.forEach(hora => {
+
+    const div = document.createElement("div");
+    div.innerText = hora;
+    div.classList.add("horario");
+
+    const [h, m] = hora.split(":").map(Number);
+    const inicioAtual = h * 60 + m;
+    const fimAtual = inicioAtual + tempoServico;
+
+    let bloqueado = false;
+
+    ocupados.forEach(ag => {
+
+      const [oh, om] = ag.hora.split(":").map(Number);
+
+      const inicioOcupado = oh * 60 + om;
+      const fimOcupado = inicioOcupado + ag.tempo;
+
+      if (
+        (inicioAtual >= inicioOcupado && inicioAtual < fimOcupado) ||
+        (fimAtual > inicioOcupado && fimAtual <= fimOcupado) ||
+        (inicioAtual <= inicioOcupado && fimAtual >= fimOcupado)
+      ) {
+        bloqueado = true;
+      }
+    });
+
+    if (bloqueado) {
+      div.classList.add("ocupado");
+    } else {
+      div.classList.add("livre");
+
+      div.onclick = () => {
+        document.querySelectorAll(".horario").forEach(h => h.classList.remove("selecionado"));
+        div.classList.add("selecionado");
+        inputHora.value = hora;
+      };
+    }
+
+    grade.appendChild(div);
+  });
+}
+
+// 📩 ENVIO DO FORMULÁRIO
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const nome = document.getElementById('nome').value;
+  const telefone = document.getElementById('telefone').value;
+  const servico = document.getElementById('servico').value;
+  const data = document.getElementById('data').value;
+  const hora = document.getElementById('hora').value;
+
+  // 🔒 validação
+  if (!hora) {
+    alert("Selecione um horário na tabela!");
+    return;
+  }
+
+  await addDoc(collection(db, "agendamentos"), {
+  nome,
+  telefone,
+  servico: dadosSalvos ? dadosSalvos.servico : servico,
+  extras: dadosSalvos ? dadosSalvos.extras : [],
+  valor: dadosSalvos ? dadosSalvos.valor : 0,
+  tempo: tempoServico,
+  data,
+  hora,
+  status: "pendente"
+});
+  inputHora.readOnly = true;
+
+ document.getElementById("mensagem").innerText = "Agendamento realizado com sucesso!";
+  form.reset();
+  grade.innerHTML = "";
+});
+const cards = document.querySelectorAll(".servico-card");
+
+cards.forEach(card => {
+  card.addEventListener("click", () => {
+
+    cards.forEach(c => c.classList.remove("ativo"));
+    card.classList.add("ativo");
+
+    const servico = card.dataset.servico;
+    const tempo = Number(card.dataset.tempo);
+    const valor = Number(card.dataset.valor);
+
+    tempoServico = tempo;
+    valorBase = valor;
+
+    inputServico.value = servico;
+
+    // atualizar resumo
+    document.getElementById("res-servico").innerText = "Serviço: " + servico;
+    document.getElementById("res-extras").innerText = "Extras: Nenhum";
+    document.getElementById("res-tempo").innerText = "Tempo: " + tempo + " min";
+    document.getElementById("res-valor").innerText = "Valor: R$ " + valor;
+
+    carregarHorarios();
+  });
+});
+const extrasInputs = document.querySelectorAll(".extra");
+
+let valorBase = 0;
+let extrasSelecionados = [];
+
+extrasInputs.forEach(extra => {
+  extra.addEventListener("change", atualizarExtras);
+});
+function atualizarExtras() {
+
+  let tempoTotal = tempoServico; // base do serviço
+  let valorTotal = valorBase;
+  extrasSelecionados = [];
+
+  extrasInputs.forEach(extra => {
+    if (extra.checked) {
+      tempoTotal += Number(extra.dataset.tempo);
+      valorTotal += Number(extra.dataset.valor);
+      extrasSelecionados.push(extra.dataset.nome);
+    }
+  });
+
+  // atualiza tempo global
+  tempoServico = tempoTotal;
+
+  // atualiza resumo
+  document.getElementById("res-extras").innerText =
+    "Extras: " + (extrasSelecionados.join(", ") || "Nenhum");
+
+  document.getElementById("res-tempo").innerText =
+    "Tempo: " + tempoTotal + " min";
+
+  document.getElementById("res-valor").innerText =
+    "Valor: R$ " + valorTotal;
+
+  // 🔥 recalcula horários
+  carregarHorarios();
+}
+console.log("Conectado Firebase");
+</script>
+</body>
+
+</html>
